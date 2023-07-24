@@ -2,12 +2,6 @@ import collections
 import glob
 import itertools
 import multiprocessing
-import os
-import os.path
-import pathlib
-import queue
-import re
-import threading
 
 
 def all_disjoint(*seqs):
@@ -34,7 +28,10 @@ def is_running_in_jupyter_notebook():
 
 
 def progressbar(iterable=None, *args, **kwargs):
+    # noinspection PyUnresolvedReferences
     import tqdm
+    # noinspection PyUnresolvedReferences
+    import tqdm.notebook
     import sys
     if is_running_in_jupyter_notebook():
         return tqdm.notebook.tqdm(iterable, *args, **kwargs)
@@ -68,12 +65,14 @@ def groupby(items, key):
         result[key(item)].append(item)
     return result
 
+
 def groupby_map(items, key_and_value_fn):
     result = collections.defaultdict(list)
     for item in items:
         key, value = key_and_value_fn(item)
         result[key].append(value)
     return result
+
 
 def itemsetter(seq, *indices):
     def setter(item):
@@ -86,7 +85,9 @@ def itemsetter(seq, *indices):
     return setter
 
 
-
 def sorted_recursive_glob(pattern):
     return sorted(glob.glob(pattern, recursive=True))
 
+
+def rounded_int_tuple(p):
+    return tuple([round(x) for x in p])

@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import os.path as osp
 import pickle
 
 
@@ -13,13 +14,13 @@ def load_pickle(file_path):
 
 
 def dump_pickle(data, file_path, protocol=pickle.DEFAULT_PROTOCOL):
-    ensure_path_exists(file_path)
+    ensure_parent_dir_exists(file_path)
     with open(file_path, 'wb') as f:
         pickle.dump(data, f, protocol)
 
 
 def dump_json(data, path, **kwargs):
-    ensure_path_exists(path)
+    ensure_parent_dir_exists(path)
     with open(path, 'w') as file:
         return json.dump(data, file, **kwargs)
 
@@ -32,7 +33,7 @@ def load_yaml(path):
 
 def write_file(content, path, is_binary=False):
     mode = 'wb' if is_binary else 'w'
-    ensure_path_exists(path)
+    ensure_parent_dir_exists(path)
     with open(path, mode) as f:
         if not is_binary:
             content = str(content)
@@ -40,8 +41,8 @@ def write_file(content, path, is_binary=False):
         f.flush()
 
 
-def ensure_path_exists(filepath):
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+def ensure_parent_dir_exists(filepath):
+    os.makedirs(osp.dirname(filepath), exist_ok=True)
 
 
 def read_file(path, is_binary=False):
@@ -69,6 +70,6 @@ def is_pickle_readable(p):
 
 def is_file_newer(path, min_time=None):
     if min_time is None:
-        return os.path.exists(path)
+        return osp.exists(path)
     min_time = datetime.datetime.strptime(min_time, '%Y-%m-%dT%H:%M:%S').timestamp()
-    return os.path.exists(path) and os.path.getmtime(path) >= min_time
+    return osp.exists(path) and osp.getmtime(path) >= min_time

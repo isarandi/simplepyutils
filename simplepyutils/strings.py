@@ -1,6 +1,11 @@
+import os
+import os.path as osp
+import re
+import pathlib
+
 
 def split_path(path):
-    return os.path.normpath(path).split(os.path.sep)
+    return osp.normpath(path).split(osp.sep)
 
 
 def str_range(string, sep, start, end):
@@ -8,7 +13,7 @@ def str_range(string, sep, start, end):
 
 
 def path_range(path, start, end):
-    return str_range(os.path.normpath(path), os.path.sep, start, end)
+    return str_range(osp.normpath(path), osp.sep, start, end)
 
 
 def path_stem(path):
@@ -18,9 +23,9 @@ def path_stem(path):
 def last_path_components(path, n_components):
     return path_range(path, -n_components, None)
 
-def replace_extension(path, new_ext):
-    return os.path.splitext(path)[0] + new_ext
 
+def replace_extension(path, new_ext):
+    return osp.splitext(path)[0] + new_ext
 
 
 def natural_sort_key_float(s, _pat=re.compile(r'([-+]?[0-9]*\.?[0-9]+(?:[eE][-+]?[0-9]+)?)')):

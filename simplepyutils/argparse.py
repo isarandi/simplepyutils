@@ -1,4 +1,5 @@
 import argparse
+import logging
 
 FLAGS = argparse.Namespace()
 logger = logging.getLogger('')
@@ -64,3 +65,72 @@ def initialize(parser, args=None):
     for handler in logger.handlers:
         logger.removeHandler(handler)
     logger.addHandler(print_handler)
+
+
+def initialize_with_logfiles(parser, logdir_root, args=None):
+    parser.add_argument('--logdir', type=str, default='default_logdir')
+    parser.add_argument('--file', type=open, action=spu.argparse.ParseFromFileAction)
+    parser.add_argument('--loglevel', type=str, default='info')
+    if isinstance(args, str):
+        args = shlex.split(args)
+
+    parser.parse_args(args=args, namespace=FLAGS)
+    loglevel = dict(error=40, warning=30, info=20, debug=10)[FLAGS.loglevel]
+    FLAGS.logdir = ensure_absolute_path(FLAGS.logdir, logdir_root)
+    os.makedirs(FLAGS.logdir, exist_ok=True)
+    simple_logfile_path = f'{FLAGS.logdir}/log.txt'
+    detailed_logfile_path = f'{FLAGS.logdir}/log_detailed.txt'
+    simple_logfile_handler = logging.FileHandler(simple_logfile_path)
+    simple_logfile_handler.setLevel(loglevel)
+    detailed_logfile_handler = logging.FileHandler(detailed_logfile_path)
+
+    simple_formatter = logging.Formatter('{asctime}-{levelname:^1.1} -- {message}', style='{')
+    hostname = socket.gethostname().split('.', 1)[0]
+    detailed_formatter = logging.Formatter(
+        f'{{asctime}} - {hostname} - {{process}} - {{processName:^12.12}} -' +
+        ' {threadName:^12.12} - {name:^12.12} - {levelname:^7.7} -- {message}', style='{')
+
+    simple_logfile_handler.setFormatter(simple_formatter)
+    detailed_logfile_handler.setFormatter(detailed_formatter)
+    logger.addHandler(simple_logfile_handler)
+    logger.addHandler(detailed_logfile_handler)
+
+    if sys.stdout.isatty():
+        # We only print the log messages to stdout if it's a terminal (tty).
+        # Otherwise it goes to the log file.
+
+        # Make sure that the log messages appear above the tqdm progess bars
+        import tqdm
+        class TQDMFile:
+            def write(self, x):
+                if len(x.rstrip()) > 0:
+                    tqdm.tqdm.write(x, file=sys.stdout)
+
+        print_handler = logging.StreamHandler(TQDMFile())
+        print_handler.setLevel(loglevel)
+        print_handler.setFormatter(simple_formatter)
+        logger.addHandler(print_handler)
+    else:
+        # Since we don't want to print the log to stdout, we also redirect stderr to the logfile to
+        # save errors for future inspection. But stdout is still stdout.
+        sys.stderr.flush()
+        new_err_file = open(detailed_logfile_path, 'ab+', 0)
+        STDERR_FILENO = 2
+        os.dup2(new_err_file.fileno(), STDERR_FILENO)
+
+    logger.setLevel(logging.DEBUG)
+
+
+def ensure_absolute_path(path, root):
+    if not root:
+        return path
+
+    if osp.isabs(path):
+        return path
+    else:
+        return osp.join(root, path)
+
+
+def flags_getter():
+    import simplepyutils
+    return simplepyutils.FLAGS
