@@ -1,5 +1,10 @@
 import argparse
 import logging
+import os
+import os.path as osp
+import shlex
+import socket
+import sys
 
 FLAGS = argparse.Namespace()
 logger = logging.getLogger('')
@@ -69,11 +74,10 @@ def initialize(parser, args=None):
 
 def initialize_with_logfiles(parser, logdir_root, args=None):
     parser.add_argument('--logdir', type=str, default='default_logdir')
-    parser.add_argument('--file', type=open, action=spu.argparse.ParseFromFileAction)
+    parser.add_argument('--file', type=open, action=ParseFromFileAction)
     parser.add_argument('--loglevel', type=str, default='info')
     if isinstance(args, str):
         args = shlex.split(args)
-
     parser.parse_args(args=args, namespace=FLAGS)
     loglevel = dict(error=40, warning=30, info=20, debug=10)[FLAGS.loglevel]
     FLAGS.logdir = ensure_absolute_path(FLAGS.logdir, logdir_root)

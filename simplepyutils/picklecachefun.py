@@ -62,7 +62,7 @@ def picklecache(path, forced=False, min_time=None):
             else:
                 suffixed_path = inner_path
 
-            if not inner_forced and is_file_newer(suffixed_path, min_time):
+            if not inner_forced and file_io.is_file_newer(suffixed_path, min_time):
                 logger.info(f'Loading cached data from {suffixed_path}')
                 try:
                     return file_io.load_pickle(suffixed_path)
