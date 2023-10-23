@@ -55,15 +55,7 @@ def parallel_map_with_progbar(fn, items, pool=None):
     if pool is None:
         pool = multiprocessing.Pool()
 
-    for _ in progressbar(pool.imap(fn, items), total=len(items)):
-        pass
-
-
-def groupby(items, key):
-    result = collections.defaultdict(list)
-    for item in items:
-        result[key(item)].append(item)
-    return result
+    return list(progressbar(pool.imap(fn, items), total=len(items)))
 
 
 def groupby_map(items, key_and_value_fn):
@@ -72,6 +64,10 @@ def groupby_map(items, key_and_value_fn):
         key, value = key_and_value_fn(item)
         result[key].append(value)
     return result
+
+
+def groupby(items, key):
+    return groupby_map(items, lambda item: (key(item), item))
 
 
 def itemsetter(seq, *indices):
