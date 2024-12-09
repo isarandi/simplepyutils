@@ -10,6 +10,7 @@ def load_pickle(file_path):
         try:
             return pickle.load(f)
         except UnicodeDecodeError:
+            f.seek(0)
             return pickle.load(f, encoding='latin1')
 
 
@@ -38,7 +39,6 @@ def write_file(content, path, is_binary=False):
         if not is_binary:
             content = str(content)
         f.write(content)
-        f.flush()
 
 
 def ensure_parent_dir_exists(filepath):
@@ -64,7 +64,7 @@ def is_pickle_readable(p):
     try:
         load_pickle(p)
         return True
-    except BaseException:
+    except Exception:
         return False
 
 

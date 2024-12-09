@@ -46,7 +46,9 @@ class BoolAction(argparse.Action):
 
 
 def initialize(parser, args=None):
-    parser.add_argument('--loglevel', type=str, default='error')
+    # if parser has no logleve argument, add it
+    if not any(arg.dest == 'loglevel' for arg in parser._actions):
+        parser.add_argument('--loglevel', type=str, default='error')
     parser.parse_args(args=args, namespace=FLAGS)
     loglevel = dict(error=40, warning=30, info=20, debug=10)[FLAGS.loglevel]
     simple_formatter = logging.Formatter('{asctime}-{levelname:^1.1} -- {message}', style='{')
